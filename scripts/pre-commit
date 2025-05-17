@@ -1,0 +1,36 @@
+#!/bin/bash
+
+root_dir=$(git rev-parse --show-toplevel)
+
+valid=true
+
+staged_files=$(git diff --cached --name-only --diff-filter=ACM | grep -v '\.php-cs-fixer\.dist\.php')
+
+for staged_file in $staged_files; do
+    if [[ $staged_file == *.php ]]; then
+        # Run php-cs-fixer
+        docker exec -e PHP_CS_FIXER_IGNORE_ENV=1 redis-exclusive-php ./vendor/bin/php-cs-fixer fix "$staged_file"
+        php_cs_fixer_result=$?
+
+        if [[ $php_cs_fixer_result -ne 8 ]]; then
+            git add "${root_dir}/${staged_file}"
+            echo "php-cs-fixer fixed $staged_file."
+        fi
+
+        # Run phpstan
+        docker exec redis-exclusive-php ./vendor/bin/phpstan analyse "$staged_file"
+        phpstan_result=$?
+
+        if [[ $phpstan_result -ne 0 ]]; then
+            echo "phpstan found issues in $staged_file."
+            valid=false
+        else 
+            echo "phpstan passed for $staged_file."
+        fi
+    fi
+done
+
+if ! ${valid}; then
+    echo "Pre-Commit found issues. Please fix them before committing."
+    exit 1
+fi

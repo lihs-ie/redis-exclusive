@@ -1,0 +1,30 @@
+name: Redis-Exclusive
+
+services:
+  php:
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+    container_name: redis-exclusive-php
+    volumes:
+      - ../src:/var/www/redis-exclusive/src
+      - ../tests:/var/www/redis-exclusive/tests
+      - ../vendor:/var/www/redis-exclusive/vendor
+      - ../composer.json:/var/www/redis-exclusive/composer.json
+      - ../composer.lock:/var/www/redis-exclusive/composer.lock
+      - ../phpunit.xml:/var/www/redis-exclusive/phpunit.xml
+      - ../.php-cs-fixer.dist.php:/var/www/redis-exclusive/.php-cs-fixer.dist.php
+      - ../phpstan.neon:/var/www/redis-exclusive/phpstan.neon
+    ports:
+      - "9000:9000"
+    depends_on:
+      - redis
+    command: php-fpm
+
+  redis:
+    build:
+      context: ./redis
+      dockerfile: Dockerfile
+    container_name: redis-exclusive-redis
+    ports:
+      - "6379:6379"
