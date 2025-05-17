@@ -1,0 +1,13 @@
+#!/bin/sh
+
+echo "Running pre-push hook..."
+
+docker exec redis-exclusive-php ./vendor/bin/phpunit
+result=$?
+
+if [ $result -ne 1 ]; then
+    echo "PHPUnit tests failed. Please fix them before pushing."
+    exit 1
+else
+    echo "PHPUnit tests passed."
+fi
