@@ -24,7 +24,8 @@
     "friendsofphp/php-cs-fixer": "dev-master",
     "phpstan/phpstan": "2.1.x-dev",
     "phpunit/phpunit": "^12",
-    "predis/predis": "dev-main"
+    "predis/predis": "dev-main",
+    "m6web/redis-mock": "dev-master"
   },
   "require": {
     "php": "^8.4",

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e85458bc1b7d078d5898f1c6cdd024c5",
+    "content-hash": "c05e7664657ff254bf0dd865c35d6af3",
     "packages": [
         {
             "name": "carbonphp/carbon-doctrine-types",
@@ -1759,6 +1759,56 @@
                 }
             ],
             "time": "2025-05-15T20:24:00+00:00"
+        },
+        {
+            "name": "m6web/redis-mock",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/BedrockStreaming/RedisMock.git",
+                "reference": "fdef627f640c63e95d804c11ac44d90d0baf2f99"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/BedrockStreaming/RedisMock/zipball/fdef627f640c63e95d804c11ac44d90d0baf2f99",
+                "reference": "fdef627f640c63e95d804c11ac44d90d0baf2f99",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1.0"
+            },
+            "require-dev": {
+                "atoum/atoum": "~3.4||~4.0",
+                "predis/predis": "~1.1"
+            },
+            "default-branch": true,
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "M6Web\\Component\\RedisMock": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "M6Web",
+                    "email": "opensource@m6web.fr",
+                    "homepage": "http://tech.m6web.fr/"
+                }
+            ],
+            "description": "Library providing a PHP mock for Redis",
+            "keywords": [
+                "mock",
+                "redis"
+            ],
+            "support": {
+                "issues": "https://github.com/BedrockStreaming/RedisMock/issues",
+                "source": "https://github.com/BedrockStreaming/RedisMock/tree/v5.6.0"
+            },
+            "time": "2023-05-02T19:20:41+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -5531,6 +5581,7 @@
     "minimum-stability": "dev",
     "stability-flags": {
         "friendsofphp/php-cs-fixer": 20,
+        "m6web/redis-mock": 20,
         "phpstan/phpstan": 20,
         "predis/predis": 20
     },
