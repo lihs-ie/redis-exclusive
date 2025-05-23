@@ -63,6 +63,23 @@ final class RedisLockTest extends TestCase
         $this->assertFalse($lock->release());
     }
 
+    #[TestDox('isLocked should return true when lock is acquired')]
+    public function testIsLockedReturnsTrueWhenLockIsAcquired(): void
+    {
+        $lock = $this->createInstance();
+        $lock->acquire();
+
+        $this->assertTrue($lock->isLocked());
+    }
+
+    #[TestDox('isLocked should return false when lock is not acquired')]
+    public function testIsLockedReturnsFalseWhenLockIsNotAcquired(): void
+    {
+        $lock = $this->createInstance();
+
+        $this->assertFalse($lock->isLocked());
+    }
+
     #[TestDox('acquireWith should return result of callback when lock is acquired')]
     public function testAcquireWithReturnsResultOfCallbackWhenLockIsAcquired(): void
     {

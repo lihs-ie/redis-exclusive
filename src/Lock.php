@@ -18,6 +18,11 @@ interface Lock
     public function release(): bool;
 
     /**
+     * Check if the lock is acquired.
+     */
+    public function isLocked(): bool;
+
+    /**
      * Execute a callback only if the lock is acquired.
      *
      * @template R

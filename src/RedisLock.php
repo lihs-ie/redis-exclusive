@@ -12,7 +12,7 @@ final class RedisLock implements Lock
     private bool $locked = false;
 
     /**
-     * constructor.
+     * Constructor.
      */
     public function __construct(
         private readonly RedisClient $client,
@@ -57,6 +57,14 @@ final class RedisLock implements Lock
         $this->locked = false;
 
         return 1 === $result;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isLocked(): bool
+    {
+        return $this->locked;
     }
 
     /**

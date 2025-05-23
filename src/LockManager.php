@@ -23,7 +23,7 @@ final class LockManager
     /**
      * Create a new lock.
      */
-    public function lock(string $key, int $ttl, string $owner): Lock
+    public function lock(string $key, int $ttlMillisecond, string $owner): Lock
     {
         if (0 < $this->dbNumber) {
             $this->client->select($this->dbNumber);
@@ -32,9 +32,91 @@ final class LockManager
         return new RedisLock(
             $this->client,
             $this->prefix.$key,
-            $ttl,
+            $ttlMillisecond,
             $owner
         );
+    }
+
+    /**
+     * Create a new lock for multiple keys.
+     *
+     * @param array<string> $keys
+     */
+    public function multiLock(array $keys, int $ttlMillisecond, string $owner): Lock
+    {
+        if (0 < $this->dbNumber) {
+            $this->client->select($this->dbNumber);
+        }
+
+        return new MultiKeyRedisLock(
+            $this->client,
+            $keys,
+            $ttlMillisecond,
+            $owner,
+            $this->prefix
+        );
+    }
+
+    /**
+     * Execute a callback within a transactional Redis block.
+     *
+     * @template R
+     *
+     * @param \Closure(): R $callback
+     *
+     * @return R
+     */
+    public function transactional(
+        string $key,
+        \Closure $callback,
+        string $owner = 'default',
+        int $ttlMillisecond = 3000,
+    ): mixed {
+        if (0 !== $this->dbNumber) {
+            $this->client->select($this->dbNumber);
+        }
+
+        $lock = new RedisLock(
+            $this->client,
+            $this->prefix.$key,
+            $ttlMillisecond,
+            $owner
+        );
+
+        $transaction = new TransactionalRedisLock($this->client, $lock);
+
+        return $transaction->withTransaction($callback);
+    }
+
+    /**
+     * Execute a callback within a transactional Redis block with multiple locks.
+     *
+     * @template R
+     *
+     * @param \Closure(): R $callback
+     * @param array<string> $keys
+     */
+    public function multiTransactional(
+        array $keys,
+        \Closure $callback,
+        string $owner = 'default',
+        int $ttlMillisecond = 3000,
+    ): mixed {
+        if (0 !== $this->dbNumber) {
+            $this->client->select($this->dbNumber);
+        }
+
+        $lock = new MultiKeyRedisLock(
+            $this->client,
+            $keys,
+            $ttlMillisecond,
+            $owner,
+            $this->prefix
+        );
+
+        $transaction = new TransactionalRedisLock($this->client, $lock);
+
+        return $transaction->withTransaction($callback);
     }
 
     /**

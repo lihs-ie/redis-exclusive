@@ -27,11 +27,21 @@ final class PhpRedisClient implements RedisClient
      */
     public function set(string $key, mixed $value, array $options = []): bool
     {
-        return $this->redis->set(
+        $result = $this->redis->set(
             $key,
             $value,
             $this->dispatcher->dispatch('SET', $options)
         );
+
+        if (\is_string($result)) {
+            return 'OK' === $result;
+        }
+
+        if ($result instanceof \Redis) {
+            return true;
+        }
+
+        return $result;
     }
 
     /**
@@ -62,5 +72,29 @@ final class PhpRedisClient implements RedisClient
     public function eval(string $luaScript, array $args = [], int $numKeys = 0): mixed
     {
         return $this->redis->eval($luaScript, $args, $numKeys);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function multi(): void
+    {
+        $this->redis->multi();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function exec(): array
+    {
+        return $this->redis->exec();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function discard(): void
+    {
+        $this->redis->discard();
     }
 }

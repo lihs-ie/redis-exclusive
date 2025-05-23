@@ -49,4 +49,21 @@ interface RedisClient
      * @param array<A> $args
      */
     public function eval(string $luaScript, array $args = [], int $numKeys = 0): mixed;
+
+    /**
+     * Begin a Redis transaction block.
+     */
+    public function multi(): void;
+
+    /**
+     * Execute queued commands in the transaction.
+     *
+     * @return array<mixed>
+     */
+    public function exec(): array;
+
+    /**
+     * Discard queued Redis commands in the transaction.
+     */
+    public function discard(): void;
 }
