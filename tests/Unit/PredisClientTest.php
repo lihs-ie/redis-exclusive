@@ -6,6 +6,7 @@ use Lihs\RedisExclusive\Clients\Option\OptionAdaptor;
 use Lihs\RedisExclusive\Clients\Option\OptionDispatcher;
 use Lihs\RedisExclusive\Clients\PredisClient;
 use PHPUnit\Framework\Attributes\CoversNothing;
+use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
@@ -101,7 +102,7 @@ final class PredisClientTest extends TestCase
 
         $redisMock->expects($this->once())
             ->method('__call')
-            ->with('set', [$key, $value, $options])
+            ->with('set', [$key, $value, ...$options])
             ->willReturn(new Status('OK'))
         ;
 
@@ -134,7 +135,7 @@ final class PredisClientTest extends TestCase
 
         $redisMock->expects($this->once())
             ->method('__call')
-            ->with('set', [$key, $value, $options])
+            ->with('set', [$key, $value, ...$options])
             ->willReturn(new Status('ERR'))
         ;
 
@@ -265,6 +266,77 @@ final class PredisClientTest extends TestCase
         $actual = $redisClient->eval($luaScript, $args, $numKeys);
 
         $this->assertSame('PONG', $actual);
+    }
+
+    #[TestDox('multi starts a transaction')]
+    #[DoesNotPerformAssertions]
+    public function testMultiStartsATransaction(): void
+    {
+        $redisMock = $this->getMockBuilder(Predis::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['__call'])
+            ->getMock()
+        ;
+
+        $redisMock->expects($this->once())
+            ->method('__call')
+            ->with('multi')
+        ;
+
+        $redisClient = new PredisClient(
+            $redisMock,
+            $this->createOptionDispatcher()
+        );
+
+        $redisClient->multi();
+    }
+
+    #[TestDox('exec returns the result of the transaction')]
+    public function testExecReturnsTheResultOfTheTransaction(): void
+    {
+        $redisMock = $this->getMockBuilder(Predis::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['__call'])
+            ->getMock()
+        ;
+
+        $redisMock->expects($this->once())
+            ->method('__call')
+            ->with('exec')
+            ->willReturn(['OK'])
+        ;
+
+        $redisClient = new PredisClient(
+            $redisMock,
+            $this->createOptionDispatcher()
+        );
+
+        $actual = $redisClient->exec();
+
+        $this->assertSame(['OK'], $actual);
+    }
+
+    #[TestDox('discard aborts the transaction')]
+    #[DoesNotPerformAssertions]
+    public function testDiscardAbortsTheTransaction(): void
+    {
+        $redisMock = $this->getMockBuilder(Predis::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['__call'])
+            ->getMock()
+        ;
+
+        $redisMock->expects($this->once())
+            ->method('__call')
+            ->with('discard')
+        ;
+
+        $redisClient = new PredisClient(
+            $redisMock,
+            $this->createOptionDispatcher()
+        );
+
+        $redisClient->discard();
     }
 
     /**

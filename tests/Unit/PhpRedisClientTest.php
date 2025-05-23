@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use Lihs\RedisExclusive\Clients\Option\OptionAdaptor;
 use Lihs\RedisExclusive\Clients\Option\OptionDispatcher;
 use Lihs\RedisExclusive\Clients\PhpRedisClient;
+use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
@@ -254,6 +255,64 @@ final class PhpRedisClientTest extends TestCase
         $actual = $redisClient->eval($luaScript, $args, $numKeys);
 
         $this->assertSame('PONG', $actual);
+    }
+
+    #[TestDox('multi starts a transaction')]
+    #[DoesNotPerformAssertions]
+    public function testMultiStartsATransaction(): void
+    {
+        $redisMock = $this->createMock(\Redis::class);
+        $redisMock
+            ->expects($this->once())
+            ->method('multi')
+        ;
+
+        $redisClient = new PhpRedisClient(
+            $redisMock,
+            $this->createOptionDispatcher()
+        );
+
+        $redisClient->multi();
+    }
+
+    #[TestDox('exec returns the result of the transaction')]
+    public function testExecReturnsTheResultOfTheTransaction(): void
+    {
+        $result = ['OK', 'PONG'];
+
+        $redisMock = $this->createMock(\Redis::class);
+        $redisMock
+            ->expects($this->once())
+            ->method('exec')
+            ->willReturn($result)
+        ;
+
+        $redisClient = new PhpRedisClient(
+            $redisMock,
+            $this->createOptionDispatcher()
+        );
+
+        $actual = $redisClient->exec();
+
+        $this->assertSame($result, $actual);
+    }
+
+    #[TestDox('discard discards the transaction')]
+    #[DoesNotPerformAssertions]
+    public function testDiscardDiscardsTheTransaction(): void
+    {
+        $redisMock = $this->createMock(\Redis::class);
+        $redisMock
+            ->expects($this->once())
+            ->method('discard')
+        ;
+
+        $redisClient = new PhpRedisClient(
+            $redisMock,
+            $this->createOptionDispatcher()
+        );
+
+        $redisClient->discard();
     }
 
     /**

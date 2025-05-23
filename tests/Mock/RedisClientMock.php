@@ -110,4 +110,30 @@ class RedisClientMock implements RedisClient
     {
         return $this->redis->eval($luaScript, $numKeys, ...$args);
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function multi(): void
+    {
+        $this->redis->multi();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function exec(): array
+    {
+        $result = $this->redis->exec();
+
+        return \is_array($result) ? $result : [];
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function discard(): void
+    {
+        $this->redis->discard();
+    }
 }

@@ -37,7 +37,7 @@ class PredisClient implements RedisClient
         $result = $this->redis->set(
             $key,
             $value,
-            $this->dispatcher->dispatch('SET', $options)
+            ...$this->dispatcher->dispatch('SET', $options)
         );
 
         return 'OK' === $result?->__toString();
@@ -67,5 +67,29 @@ class PredisClient implements RedisClient
     public function eval(string $luaScript, array $args = [], int $numKeys = 0): mixed
     {
         return $this->redis->eval($luaScript, $numKeys, ...$args);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function multi(): void
+    {
+        $this->redis->multi();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function exec(): array
+    {
+        return $this->redis->exec() ?? [];
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function discard(): void
+    {
+        $this->redis->discard();
     }
 }
