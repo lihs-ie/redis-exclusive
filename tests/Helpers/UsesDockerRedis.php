@@ -3,7 +3,9 @@
 namespace Tests\Helpers;
 
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\TestDox;
 use Predis\Client as Predis;
+use Predis\Response\Status;
 
 #[Group('feature')]
 trait UsesDockerRedis
@@ -27,7 +29,13 @@ trait UsesDockerRedis
                 'port' => 6379,
             ]);
 
-            return 'PONG' === (string) $client->ping();
+            $result = $client->ping();
+
+            if ($result instanceof Status) {
+                return 'PONG' === $result->getPayload();
+            }
+
+            return \is_string($result) && 'PONG' === $result;
         } catch (\Throwable $exception) {
             return false;
         }
