@@ -38,6 +38,34 @@ final class RedisLock implements Lock
     /**
      * {@inheritDoc}
      */
+    public function acquireWithRetry(int $maxWaitMs = 3000, int $backoffMs = 100): bool
+    {
+        $start = \microtime(true);
+        $attempt = 0;
+
+        while (true) {
+            ++$attempt;
+
+            if ($this->acquire()) {
+                return true;
+            }
+
+            $this->release();
+
+            $elapsedMs = (\microtime(true) - $start) * 1000;
+
+            if ($maxWaitMs <= $elapsedMs) {
+                return false;
+            }
+
+            // wait for the backoff time
+            \usleep($backoffMs * 1000);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function release(): bool
     {
         if (!$this->locked) {

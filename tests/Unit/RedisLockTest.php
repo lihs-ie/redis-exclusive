@@ -55,6 +55,36 @@ final class RedisLockTest extends TestCase
         $this->assertTrue($lock->release());
     }
 
+    #[TestDox('acquireWithRetry should return true after the lock is released manually without ticks')]
+    public function testAcquireWithRetryReturnsTrueAfterUnlock(): void
+    {
+        $redisMock = new RedisMock();
+        $client = new RedisClientMock($redisMock);
+
+        $lock = new RedisLock($client, 'lock:test', 1000, 'test-owner');
+
+        $start = \microtime(true);
+
+        $result = false;
+
+        while ((\microtime(true) - $start) * 1000 < 1000) {
+            if ((\microtime(true) - $start) * 1000 > 200) {
+                $redisMock->del('lock:test');
+            }
+
+            $result = $lock->acquire();
+
+            if ($result) {
+                break;
+            }
+
+            \usleep(100 * 1000);
+        }
+
+        $this->assertTrue($result);
+        $this->assertTrue($lock->isLocked());
+    }
+
     #[TestDox('release should return false when lock is not acquired')]
     public function testReleaseReturnsFalseWhenLockIsNotAcquired(): void
     {

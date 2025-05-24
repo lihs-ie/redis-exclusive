@@ -64,6 +64,29 @@ final class MultiKeyRedisLock implements Lock
     /**
      * {@inheritDoc}
      */
+    public function acquireWithRetry(int $maxWaitMs = 3000, int $backoffMs = 100): bool
+    {
+        $start = \microtime(true);
+
+        while (true) {
+            if ($this->acquire()) {
+                return true;
+            }
+
+            $elapsed = (\microtime(true) - $start) * 1000;
+
+            if ($elapsed >= $maxWaitMs) {
+                return false;
+            }
+
+            // wait for the backoff time
+            \usleep($backoffMs * 1000);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function release(): bool
     {
         foreach ($this->locks as $lock) {
