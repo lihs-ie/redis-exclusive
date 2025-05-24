@@ -13,6 +13,11 @@ interface Lock
     public function acquire(): bool;
 
     /**
+     * Attempt to acquire the lock with retry.
+     */
+    public function acquireWithRetry(int $maxWaitMs = 3000, int $backoffMs = 100): bool;
+
+    /**
      * Release the lock.
      */
     public function release(): bool;
