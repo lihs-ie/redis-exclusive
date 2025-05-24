@@ -8,7 +8,7 @@ Supports both **Predis** and **PhpRedis** via Laravel's Redis abstraction layer.
 ## 📑 Table of Contents
 
 - 🔧 [Features](#features)
-- ~~📦 [Installation](#installation)~~
+- 📦 [Installation](#installation)
 - 🧪 [Usage](#usage)
 - ⚙️ [Configuration](#configuration)
 - 📚 [Requirements](#requirements)
@@ -28,9 +28,33 @@ Supports both **Predis** and **PhpRedis** via Laravel's Redis abstraction layer.
 
 ---
 
-~~## Installation~~
+## Installation
 
-Not yet
+Install the package via Composer:
+
+```bash
+composer require lihs/redis-exclusive
+```
+
+### Laravel Auto-Discovery
+
+The package will automatically register its service provider and facade in Laravel 11+.
+
+### Manual Registration (if needed)
+
+If auto-discovery is disabled, add the service provider to your `config/app.php`:
+
+```php
+'providers' => [
+    // ...
+    Lihs\RedisExclusive\Providers\RedisClientServiceProvider::class,
+],
+
+'aliases' => [
+    // ...
+    'RedisExclusive' => Lihs\RedisExclusive\Facades\RedisExclusive::class,
+],
+```
 
 ## Usage
 
@@ -84,6 +108,51 @@ This provides a way to simulate Redis-level rollback by restoring key values sav
 ```php
 $lock->acquireWith(function () {
     // Executed only if lock is acquired
+});
+```
+
+### Using Facades (Recommended)
+
+```php
+use Lihs\RedisExclusive\Facades\RedisExclusive;
+
+// Simple lock with automatic release
+$result = RedisExclusive::lock('resource-key')->acquireWith(function () {
+    // Your exclusive code here
+    return 'success';
+});
+
+if ($result !== null) {
+    // Lock was acquired and code executed
+    echo $result; // 'success'
+}
+```
+
+### Transactional Locks with Facades
+
+```php
+use Lihs\RedisExclusive\Facades\RedisExclusive;
+use Illuminate\Support\Facades\Redis;
+
+$result = RedisExclusive::transactional('job:lock')->acquireWith(function ($lock) {
+    $lock->trackKey('job:123:status');
+    $lock->trackKey('job:123:progress');
+
+    Redis::set('job:123:status', 'processing');
+    Redis::set('job:123:progress', 100);
+
+    return 'completed';
+});
+```
+
+### Multi-Key Locks
+
+```php
+use Lihs\RedisExclusive\Facades\RedisExclusive;
+
+$result = RedisExclusive::multiLock(['user:123', 'account:456'])->acquireWith(function () {
+    // All locks acquired - safe to proceed
+    return transferFunds();
 });
 ```
 
